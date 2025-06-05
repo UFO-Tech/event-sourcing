@@ -1,0 +1,57 @@
+{
+  "name": "ufo-tech/event-sourcing",
+  "description": "A lightweight event sourcing library with aggregates, event store and projections for modern PHP applications.",
+  "version": "1.0.0",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Valik Nikolaev",
+      "email": "valiknik225@gmail.com"
+    },
+    {
+      "name": "Alex Maystrenko",
+      "email": "ashterix69@gmail.com"
+    }
+  ],
+  "type": "symfony-bundle",
+  "homepage": "https://docs.ufo-tech.space/bin/view/docs/EventSourcing/?language=en",
+  "keywords": [
+    "event sourcing",
+    "event store",
+    "aggregates",
+    "domain events",
+    "projections",
+    "php",
+    "cqrs",
+    "ddd",
+    "ufo-tech"
+  ],
+  "require": {
+    "php": ">=8.3",
+    "ufo-tech/dto-transformer": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ufo\\EventSourcing\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Ufo\\EventSourcing\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0.x-dev"
+    }
+  },
+  "scripts": {
+    "test": [
+      "@putenv APP_ENV=test",
+      "php vendor/bin/phpunit --display-deprecations --display-errors"
+    ]
+  }
+}

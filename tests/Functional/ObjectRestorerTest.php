@@ -4,6 +4,7 @@ namespace Ufo\EventSourcing\Tests\Functional;
 
 use PHPUnit\Framework\TestCase;
 use Ufo\EventSourcing\Resolver\CollectionResolver;
+use Ufo\EventSourcing\Restorer\Merger\Merger;
 use Ufo\EventSourcing\Restorer\ObjectDefinition;
 use Ufo\EventSourcing\Restorer\ObjectRestorer;
 use Ufo\EventSourcing\Tests\Fixtures\TestObjectWithCollection;
@@ -15,7 +16,9 @@ class ObjectRestorerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->objectRestorer = new ObjectRestorer();
+        $this->objectRestorer = new ObjectRestorer(
+            new Merger()
+        );
     }
 
     /**

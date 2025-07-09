@@ -11,6 +11,7 @@ use Ufo\EventSourcing\Resolver\CollectionResolver;
 use Ufo\EventSourcing\Resolver\MainResolver;
 use Ufo\EventSourcing\Resolver\ObjectResolver;
 use Ufo\EventSourcing\Resolver\ScalarResolver;
+use Ufo\EventSourcing\Restorer\Merger\Merger;
 use Ufo\EventSourcing\Restorer\ObjectDefinition;
 use Ufo\EventSourcing\Restorer\ObjectRestorer;
 use Ufo\EventSourcing\Tests\Fixtures\TestDifficultObject;
@@ -198,7 +199,7 @@ class ObjectChangeDetectorTest extends TestCase
         /**
          * @var TestSimpleObjectWithIgnore $restoreObject
          */
-        $restoreObject = (new ObjectRestorer())->restore($objectDefinition);
+        $restoreObject = (new ObjectRestorer(new Merger()))->restore($objectDefinition);
 
         $this->assertEquals($restoreObject->name, $newSimpleObject->name);
         $this->assertEquals($restoreObject->type, $oldSimpleObject->type);

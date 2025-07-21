@@ -5,8 +5,8 @@ declare(strict_types = 1);
 namespace Ufo\EventSourcing\Restorer;
 
 use Ufo\DTO\DTOTransformer;
+use Ufo\EventSourcing\Contracts\MergerInterface;
 use Ufo\EventSourcing\Contracts\RestorerInterface;
-use Ufo\EventSourcing\Restorer\Merger\MergerInterface;
 
 class ObjectRestorer implements RestorerInterface
 {

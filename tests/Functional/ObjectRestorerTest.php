@@ -51,7 +51,7 @@ class ObjectRestorerTest extends TestCase
 
         $result = $this->objectRestorer->restore($objectDefinition);
 
-        $this->assertInstanceOf( TestSimpleObject::class, $result);
+        $this->assertInstanceOf(TestSimpleObject::class, $result);
     }
 
     public function testDifficultRestoreSuccess(): void

@@ -27,8 +27,8 @@
     "ufo-tech"
   ],
   "require": {
-    "php": ">=8.3",
-    "ufo-tech/dto-transformer": "*"
+    "php": ">=8.4",
+    "ufo-tech/dto-transformer": "^1.2"
   },
   "require-dev": {
     "phpunit/phpunit": "*"

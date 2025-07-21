@@ -10,7 +10,11 @@ use Ufo\DTO\Attributes\AttrDTO;
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 class AsCollection extends AttrDTO
 {
-    public function __construct(string $dtoFQCN, ?string $transformerFQCN = null)
+    public function __construct(
+        string $dtoFQCN,
+        public readonly ?string $keyField = null,
+        ?string $transformerFQCN = null
+    )
     {
         parent::__construct($dtoFQCN, true, [], $transformerFQCN);
     }

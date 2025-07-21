@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Ufo\EventSourcing\Restorer\Merger;
 
+use Ufo\EventSourcing\Contracts\MergerInterface;
 use Ufo\EventSourcing\Contracts\ResolverInterface;
 
 class Merger implements MergerInterface

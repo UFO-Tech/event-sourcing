@@ -6,7 +6,7 @@ namespace Ufo\EventSourcing\Resolver;
 
 class ScalarResolver extends AbstractResolver
 {
-    public function supportType(mixed $value): bool
+    public function supportType(mixed $value, ?ContextDTO $context = null): bool
     {
         return is_scalar($value);
     }

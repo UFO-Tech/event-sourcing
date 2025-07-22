@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Ufo\EventSourcing\Restorer\Merger;
+namespace Ufo\EventSourcing\Contracts;
 
 interface MergerInterface
 {

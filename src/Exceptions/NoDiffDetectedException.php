@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Ufo\EventSourcing\Exceptions;
 
 use Throwable;
+use Ufo\EventSourcing\Resolver\ContextDTO;
 
 class NoDiffDetectedException extends \LogicException
 {

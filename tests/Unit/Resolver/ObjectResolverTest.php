@@ -14,10 +14,12 @@ use Ufo\EventSourcing\Resolver\ObjectResolver;
 use Ufo\EventSourcing\Resolver\ScalarResolver;
 use Ufo\EventSourcing\Resolver\MainResolver;
 use Ufo\EventSourcing\Tests\Fixtures\TestBrokenObject;
+use Ufo\EventSourcing\Tests\Fixtures\TestDifficultObjectWithNullable;
 use Ufo\EventSourcing\Tests\Fixtures\TestFullIgnoreObject;
 use Ufo\EventSourcing\Tests\Fixtures\TestObjectWithCollectionKey;
 use Ufo\EventSourcing\Tests\Fixtures\TestSimpleObject;
 use Ufo\EventSourcing\Tests\Fixtures\TestSimpleObjectWithIgnore;
+use Ufo\EventSourcing\Utils\ValueNormalizer;
 
 class ObjectResolverTest extends TestCase
 {
@@ -25,11 +27,13 @@ class ObjectResolverTest extends TestCase
 
     protected function setUp(): void
     {
+        $valueNormalizer = new ValueNormalizer();
+
         $mainResolver = new MainResolver();
         $mainResolver->addResolver(new ScalarResolver());
-        $mainResolver->addResolver(new ArrayResolver($mainResolver));
+        $mainResolver->addResolver(new ArrayResolver($mainResolver, $valueNormalizer));
         $mainResolver->addResolver(new CollectionResolver($mainResolver));
-        $this->resolver = new ObjectResolver($mainResolver);
+        $this->resolver = new ObjectResolver($mainResolver, $valueNormalizer);
         $mainResolver->addResolver($this->resolver);
     }
 
@@ -53,7 +57,7 @@ class ObjectResolverTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $old = new \stdClass();
         $new = new TestSimpleObject('A', 'X', []);
-        $this->resolver->resolve($old, $new);
+        $this->resolver->resolve($old, $new, ContextDTO::create(checkClassEquality: true));
     }
 
     public function testItReturnsSnapshotWhenOldNull(): void
@@ -144,7 +148,7 @@ class ObjectResolverTest extends TestCase
 
         $old = new \stdClass();
         $new = new TestSimpleObject('A', 'B', []);
-        $this->resolver->resolve($old, $new);
+        $this->resolver->resolve($old, $new, ContextDTO::create(checkClassEquality: true));
     }
 
     public function testItThrowsWhenNewValueNotInitialized(): void
@@ -162,5 +166,47 @@ class ObjectResolverTest extends TestCase
 
         $obj = new TestFullIgnoreObject('same', 'same');
         $this->resolver->resolve($obj, clone $obj);
+    }
+
+    public function testItDetectsObjectSetToNull(): void
+    {
+        $old = new TestDifficultObjectWithNullable(
+            'Same name',
+            new TestSimpleObject('Name', 'Type', ['a', 'b'])
+        );
+
+        $new = new TestDifficultObjectWithNullable(
+            'Same name',
+            null
+        );
+
+        $diff = $this->resolver->resolve($old, $new);
+
+        $this->assertSame([
+            'testDTO' => null
+        ], $diff);
+    }
+
+    public function testItDetectsObjectChangedFromNull(): void
+    {
+        $old = new TestDifficultObjectWithNullable(
+            'Same name',
+            null
+        );
+
+        $new = new TestDifficultObjectWithNullable(
+            'Same name',
+            new TestSimpleObject('Name', 'Type', ['a', 'b'])
+        );
+
+        $diff = $this->resolver->resolve($old, $new);
+
+        $this->assertSame([
+            'testDTO' => [
+                'name' => 'Name',
+                'type' => 'Type',
+                'data' => ['a', 'b'],
+            ]
+        ], $diff);
     }
 }

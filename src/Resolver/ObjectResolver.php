@@ -11,13 +11,15 @@ use Ufo\EventSourcing\Attributes\AsCollection;
 use Ufo\EventSourcing\Attributes\ChangeIgnore;
 use Ufo\EventSourcing\Contracts\MainResolverInterface;
 use Ufo\EventSourcing\Contracts\ResolverInterface;
+use Ufo\EventSourcing\Contracts\ValueNormalizerInterface;
 use Ufo\EventSourcing\Exceptions\InvalidObjectException;
 use Ufo\EventSourcing\Exceptions\NoDiffDetectedException;
 
 class ObjectResolver extends AbstractResolver
 {
     public function __construct(
-        protected ResolverInterface&MainResolverInterface $resolver
+        protected ResolverInterface&MainResolverInterface $resolver,
+        protected ValueNormalizerInterface $valueNormalizer,
     ) {}
 
     public function supportType(mixed $value, ?ContextDTO $context = null): bool
@@ -33,7 +35,7 @@ class ObjectResolver extends AbstractResolver
         $context ??= ContextDTO::create();
         $path = $context->getPath();
 
-        $this->checkClass($oldValue, $newValue);
+        $this->checkClass($oldValue, $newValue, $context);
 
         if (!is_null($oldValue) && $this->isEqual($oldValue, $newValue))
             throw NoDiffDetectedException::fromPropertyName($path);
@@ -43,7 +45,10 @@ class ObjectResolver extends AbstractResolver
 
     public function isEqual(mixed $oldValue, mixed $newValue): bool
     {
-        return false;
+        $oldValue = $this->valueNormalizer->normalize($oldValue);
+        $newValue = $this->valueNormalizer->normalize($newValue);
+
+        return $oldValue === $newValue;
     }
 
     /**
@@ -52,13 +57,6 @@ class ObjectResolver extends AbstractResolver
     private function collectDiff(?object $oldValue, object $newValue, ContextDTO $context): array
     {
         $diff = [];
-
-        try {
-            $this->checkClass($oldValue, $newValue);
-        } catch (InvalidObjectException) {
-            $oldValue = null;
-        }
-
         $ref = new \ReflectionObject($newValue);
 
         foreach ($ref->getProperties() as $property) {
@@ -66,26 +64,39 @@ class ObjectResolver extends AbstractResolver
             if (!$property->isInitialized($newValue)) throw new InvalidObjectException();
 
             $nextContext = $this->enrichContextWithCollectionInfo($property, $context, $newValue);
-
             $newVal = $property->getValue($newValue);
 
-            if (!$oldValue || !$property->isInitialized($oldValue)) {
-                try {
-                    $diff[$property->getName()] = $this->resolver->resolve(null, $newVal, $nextContext);
-                } catch (NoDiffDetectedException) {}
+            $hasPropertyInOld = $oldValue && (new \ReflectionClass($oldValue))->hasProperty($property->getName());
+
+            if (!$hasPropertyInOld) {
+                $this->resolveValue($newVal, $nextContext, $diff);
                 continue;
             }
 
-            $oldVal = $property->getValue($oldValue);
+            $oldProp = (new \ReflectionClass($oldValue))->getProperty($property->getName());
 
-            try {
-                $diff[$property->getName()] = $this->resolver->resolve($oldVal, $newVal, $nextContext);
-            } catch (NoDiffDetectedException) {}
+            if (!$oldProp->isInitialized($oldValue)) {
+                $this->resolveValue($newVal, $nextContext, $diff);
+                continue;
+            }
+
+            $oldVal = $oldProp->getValue($oldValue);
+
+            $this->resolveValue($newVal, $nextContext, $diff, $oldVal);
         }
 
-        if (empty($diff)) throw NoDiffDetectedException::fromPropertyName($context->getPath());
+        if (empty($diff)) {
+            throw NoDiffDetectedException::fromPropertyName($context->getPath());
+        }
 
         return $diff;
+    }
+
+    protected function resolveValue(mixed $newVal, ContextDTO $nextContext, array &$diff, mixed $oldVal = null): void
+    {
+        try {
+            $diff[$nextContext->getParam()] = $this->resolver->resolve($oldVal, $newVal, $nextContext);
+        } catch (NoDiffDetectedException) {}
     }
 
     protected function shouldIgnore(ReflectionProperty $property): bool
@@ -93,17 +104,16 @@ class ObjectResolver extends AbstractResolver
         return !empty($property->getAttributes(ChangeIgnore::class, ReflectionAttribute::IS_INSTANCEOF));
     }
 
-    protected function checkClass(?object $oldValue, object $newValue): void
+    protected function checkClass(?object $oldValue, object $newValue, ContextDTO $context): void
     {
+        if (!$context->checkClassEquality) return;
+
         if (!is_null($oldValue) && get_class($oldValue) !== get_class($newValue))
             throw new \InvalidArgumentException(sprintf(
                 'Expected objects of the same class, got %s and %s.', get_class($oldValue), get_class($newValue)
             ));
     }
 
-    /**
-     * @throws ReflectionException
-     */
     protected function enrichContextWithCollectionInfo(ReflectionProperty $property, ContextDTO $context, object $object): ContextDTO
     {
         $nextContext = $context->forPath($property->getName());

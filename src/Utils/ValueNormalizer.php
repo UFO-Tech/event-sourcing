@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace Ufo\EventSourcing\Utils;
 
-use Ufo\DTO\DTOTransformer;
 use Ufo\EventSourcing\Contracts\ValueNormalizerInterface;
 
 class ValueNormalizer implements ValueNormalizerInterface
@@ -13,6 +12,6 @@ class ValueNormalizer implements ValueNormalizerInterface
     {
         if (!is_object($value)) return $value;
 
-        return DTOTransformer::toArray($value);
+        return ChangeIgnoreTransformer::toArray($value);
     }
 }

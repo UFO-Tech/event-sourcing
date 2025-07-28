@@ -4,5 +4,5 @@ namespace Ufo\EventSourcing\Contracts;
 
 interface MainResolverFactoryInterface
 {
-    public function create(): MainResolverInterface&ResolverInterface;
+    public function create(): MainResolverInterface;
 }

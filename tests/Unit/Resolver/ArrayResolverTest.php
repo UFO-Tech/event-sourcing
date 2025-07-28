@@ -12,6 +12,7 @@ use Ufo\EventSourcing\Resolver\ContextDTO;
 use Ufo\EventSourcing\Resolver\MainResolver;
 use Ufo\EventSourcing\Resolver\ObjectResolver;
 use Ufo\EventSourcing\Resolver\ScalarResolver;
+use Ufo\EventSourcing\Utils\ValueNormalizer;
 
 class ArrayResolverTest extends TestCase
 {
@@ -19,11 +20,13 @@ class ArrayResolverTest extends TestCase
 
     protected function setUp(): void
     {
+        $valueNormalizer = new ValueNormalizer();
+
         $mainResolver = new MainResolver();
         $mainResolver->addResolver(new ScalarResolver());
         $mainResolver->addResolver(new CollectionResolver($mainResolver));
-        $mainResolver->addResolver(new ObjectResolver($mainResolver));
-        $this->resolver = new ArrayResolver($mainResolver);
+        $mainResolver->addResolver(new ObjectResolver($mainResolver, $valueNormalizer));
+        $this->resolver = new ArrayResolver($mainResolver, $valueNormalizer);
         $mainResolver->addResolver($this->resolver);
     }
 

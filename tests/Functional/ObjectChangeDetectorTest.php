@@ -12,6 +12,7 @@ use Ufo\EventSourcing\Resolver\MainResolver;
 use Ufo\EventSourcing\Restorer\Merger\Merger;
 use Ufo\EventSourcing\Restorer\ObjectDefinition;
 use Ufo\EventSourcing\Restorer\ObjectRestorer;
+use Ufo\EventSourcing\Tests\Fixtures\ProductDTO;
 use Ufo\EventSourcing\Tests\Fixtures\TestDifficultObject;
 use Ufo\EventSourcing\Tests\Fixtures\TestObjectWithCollectionKey;
 use Ufo\EventSourcing\Tests\Fixtures\TestSimpleObject;
@@ -292,13 +293,13 @@ class ObjectChangeDetectorTest extends TestCase
     {
         $old = [
             'products' => [
-                '4820197566105' => (object)['quantity' => 10],
+                '4820197566105' =>  new ProductDTO(10),
             ],
         ];
 
         $new = [
             'products' => [
-                '4820197566105' => (object)['quantity' => 15],
+                '4820197566105' => new ProductDTO(15),
             ],
         ];
 

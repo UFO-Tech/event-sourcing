@@ -28,7 +28,8 @@ class ContextDTO implements IArrayConstructible, IArrayConvertible
     public function __construct(
         readonly public string $deletePlaceholder = self::DELETE_FLAG,
         protected string $param = self::ROOT_PARAM,
-        array|string $assocPaths = []
+        array|string $assocPaths = [],
+        readonly public bool $checkClassEquality = false
     )
     {
         $this->path = $param;
@@ -54,9 +55,10 @@ class ContextDTO implements IArrayConstructible, IArrayConvertible
     public static function create(
         string $param = self::ROOT_PARAM,
         string $deletePlaceholder = self::DELETE_FLAG,
-        array|string $assocPaths = []
+        array|string $assocPaths = [],
+        bool $checkClassEquality = false
     ): static {
-        return new static($deletePlaceholder, $param, $assocPaths);
+        return new static($deletePlaceholder, $param, $assocPaths, $checkClassEquality);
     }
 
     public function forPath(string $nextParam): static

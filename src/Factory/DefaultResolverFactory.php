@@ -12,6 +12,7 @@ use Ufo\EventSourcing\Resolver\CollectionResolver;
 use Ufo\EventSourcing\Resolver\MainResolver;
 use Ufo\EventSourcing\Resolver\ObjectResolver;
 use Ufo\EventSourcing\Resolver\ScalarResolver;
+use Ufo\EventSourcing\Utils\ValueNormalizer;
 
 class DefaultResolverFactory implements MainResolverFactoryInterface
 {
@@ -22,12 +23,13 @@ class DefaultResolverFactory implements MainResolverFactoryInterface
         ScalarResolver::class,
     ];
 
-    public function create(): MainResolverInterface&ResolverInterface
+    public function create(): MainResolverInterface
     {
+        $valueNormalizer = new ValueNormalizer();
         $mainResolver = new MainResolver();
 
         foreach (self::RESOLVER_CLASSES as $resolverClass) {
-            $mainResolver->addResolver(new $resolverClass($mainResolver));
+            $mainResolver->addResolver(new $resolverClass($mainResolver, $valueNormalizer));
         }
 
         return $mainResolver;

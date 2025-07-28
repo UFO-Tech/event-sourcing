@@ -8,7 +8,7 @@ class ScalarResolver extends AbstractResolver
 {
     public function supportType(mixed $value, ?ContextDTO $context = null): bool
     {
-        return is_scalar($value);
+        return is_scalar($value) || is_null($value);
     }
 
     public function isEqual(mixed $oldValue, mixed $newValue): bool

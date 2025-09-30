@@ -1,7 +1,7 @@
 {
   "name": "ufo-tech/event-sourcing",
   "description": "A lightweight event sourcing library with aggregates, event store and projections for modern PHP applications.",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "license": "MIT",
   "authors": [
     {

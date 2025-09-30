@@ -32,7 +32,12 @@ final class MainResolver implements ResolverInterface, MainResolverInterface
         $context = $context ?? $this->defaultContext;
 
         foreach ($this->resolvers as $resolver) {
-            if (!$resolver->supportType($newValue, $context)) continue;
+            if (is_array($newValue) && empty($newValue)) {
+                if (!$resolver->supportType($oldValue, $context)) continue;
+            } elseif (!$resolver->supportType($newValue, $context)) {
+                continue;
+            }
+
             try {
                 return $resolver->resolve($oldValue, $newValue, $context);
             } catch (NoDiffDetectedException) {

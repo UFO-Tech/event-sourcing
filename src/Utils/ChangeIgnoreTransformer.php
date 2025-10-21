@@ -12,7 +12,7 @@ use Ufo\EventSourcing\Attributes\ChangeIgnore;
 
 class ChangeIgnoreTransformer extends DTOTransformer
 {
-    public static function toArray(object $dto, array $renameKey = []): array
+    public static function toArray(object $dto, array $renameKey = [], bool $asSmartArray = true): array
     {
         $reflection = new ReflectionClass($dto);
         $properties = $reflection->getProperties();
@@ -25,17 +25,17 @@ class ChangeIgnoreTransformer extends DTOTransformer
             if (!empty($property->getAttributes(ChangeIgnore::class, ReflectionAttribute::IS_INSTANCEOF))) continue;
 
             $value = $property->getValue($dto);
-            $value = static::convertValue($value);
+            $value = static::convertValue($value, $asSmartArray);
             $array[$keys->dataKey] = $value;
         }
 
         return $array;
     }
 
-    protected static function convertValue(mixed $value): mixed
+    protected static function convertValue(mixed $value, bool $asSmartArray): mixed
     {
         return match (gettype($value)) {
-            TypeHintResolver::ARRAY->value => static::mapArrayWithKeys($value),
+            TypeHintResolver::ARRAY->value => static::mapArrayWithKeys($value, $asSmartArray),
             TypeHintResolver::OBJECT->value => static::toArray($value),
             default => $value,
         };

@@ -18,11 +18,15 @@ class ArrayResolverTest extends TestCase
 {
     private ArrayResolver $resolver;
 
+    protected MainResolver $mainResolver;
+
     protected function setUp(): void
     {
         $valueNormalizer = new ValueNormalizer();
 
         $mainResolver = new MainResolver();
+        $this->mainResolver = $mainResolver;
+
         $mainResolver->addResolver(new ScalarResolver());
         $mainResolver->addResolver(new CollectionResolver($mainResolver));
         $mainResolver->addResolver(new ObjectResolver($mainResolver, $valueNormalizer));
@@ -74,5 +78,45 @@ class ArrayResolverTest extends TestCase
         $this->expectException(NoDiffDetectedException::class);
 
         $this->resolver->resolve($old, $new);
+    }
+
+    public function testItResolvesEmptyDifferenceIfEqualWithAssocPath(): void
+    {
+        $old = ['a' => 1, 'b' => 2, 'c' => 3];
+        $new = [];
+
+        $result = $this->mainResolver->resolve($old, $new);
+
+        $this->assertSame([
+            'a' => '__DELETED__',
+            'b' => '__DELETED__',
+            'c' => '__DELETED__',
+        ], $result);
+
+        $old2 = ['a', 'b', 'c'];
+        $new2 = [];
+
+        $result2 = $this->mainResolver->resolve($old2, $new2);
+        $this->assertSame([], $result2);
+    }
+
+    public function testItResolvesEmptyDifferenceIfEqualWithAssocPathFromContext(): void
+    {
+        $old = ['a', 'b', 'c'];
+        $new = [
+            'a' => 'a',
+            'b' => 'b',
+            'c' => 'c'
+        ];
+
+        $result = $this->mainResolver->resolve($old, $new);
+        $this->assertSame([
+            0 => '__DELETED__',
+            1 => '__DELETED__',
+            2 => '__DELETED__',
+            'a' => 'a',
+            'b' => 'b',
+            'c' => 'c'
+        ], $result);
     }
 }

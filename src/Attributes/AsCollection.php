@@ -12,6 +12,9 @@ class AsCollection extends AttrDTO
 {
     public function __construct(string $dtoFQCN, ?string $transformerFQCN = null)
     {
-        parent::__construct($dtoFQCN, true, [], $transformerFQCN);
+        parent::__construct($dtoFQCN, [
+            AttrDTO::C_COLLECTION => true,
+            AttrDTO::C_TRANSFORMER => $transformerFQCN,
+        ]);
     }
 }

@@ -7,6 +7,7 @@ namespace Ufo\EventSourcing\Resolver;
 use Ufo\EventSourcing\Contracts\MainResolverInterface;
 use Ufo\EventSourcing\Contracts\ResolverInterface;
 use Ufo\EventSourcing\Contracts\ValueNormalizerInterface;
+use Ufo\EventSourcing\Exceptions\NoDiffDetectedException;
 use Ufo\EventSourcing\Utils\ArrayHelper;
 
 class ArrayResolver extends AbstractResolver
@@ -28,10 +29,17 @@ class ArrayResolver extends AbstractResolver
         $oldValue ??= [];
         $newValue ??= [];
 
+        if (count($oldValue) !== count($newValue)) {
+            return array_values($newValue);
+        }
+
         $result = array_map(
             fn($item) => $this->resolver->resolve(null, $item, $context),
             parent::resolve($oldValue, $newValue, $context)
         );
+
+        if (empty($result))
+            throw NoDiffDetectedException::fromPropertyName($context->getPath());
 
         return array_values($result);
     }
@@ -46,6 +54,10 @@ class ArrayResolver extends AbstractResolver
 
     protected function normalizeArray(array $value): array
     {
+        if (ArrayHelper::isAssociative($value)) {
+            asort($value);
+        }
+
         $result = [];
         foreach ($value as $key => $item) {
             if (is_array($item)) {

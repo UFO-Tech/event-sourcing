@@ -80,6 +80,29 @@ class ArrayResolverTest extends TestCase
         $this->resolver->resolve($old, $new);
     }
 
+    public function testItResolvesEmptyDifferenceIfEqualBigArray(): void
+    {
+        $old = [
+            'products' => [
+                ['price' => 12.50, 'id' => 1, 'name' => 'Wine', 'tags' => ['alcohol', 'drink']],
+                ['id' => 2, 'name' => 'Whisky', 'price' => 25.00, 'tags' => ['strong', 'alcohol']],
+                ['id' => 3, 'name' => 'Cognac', 'price' => 30.00, 'tags' => ['premium', 'drink']],
+            ]
+        ];
+
+        $new = [
+            'products' => [
+                ['id' => 1, 'name' => 'Wine', 'price' => 12.50, 'tags' => ['alcohol', 'drink']],
+                ['id' => 2, 'name' => 'Whisky', 'price' => 25.00, 'tags' => ['strong', 'alcohol']],
+                ['id' => 3, 'name' => 'Cognac', 'price' => 30.00, 'tags' => ['premium', 'drink']],
+            ]
+        ];
+
+        $this->expectException(NoDiffDetectedException::class);
+
+        $result = $this->resolver->resolve($old, $new);
+    }
+
     public function testItResolvesEmptyDifferenceIfEqualWithAssocPath(): void
     {
         $old = ['a' => 1, 'b' => 2, 'c' => 3];

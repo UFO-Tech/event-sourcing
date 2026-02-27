@@ -11,8 +11,9 @@ abstract class AbstractResolver implements ResolverInterface
 {
     public function resolve(mixed $oldValue, mixed $newValue, ?ContextDTO $context = null): mixed
     {
-        if ($this->isEqual($oldValue, $newValue))
-            throw NoDiffDetectedException::fromPropertyName($context?->getPath() ?? ContextDTO::ROOT_PARAM);
+        $context ??= ContextDTO::create();
+        if (!$context->ignorePreview() && $this->isEqual($oldValue, $newValue))
+            throw NoDiffDetectedException::fromPropertyName($context->getPath() ?? ContextDTO::ROOT_PARAM);
 
         return $newValue;
     }

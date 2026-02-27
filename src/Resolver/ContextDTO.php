@@ -25,6 +25,8 @@ class ContextDTO implements IArrayConstructible, IArrayConvertible
     protected array $patternPaths = [];
     protected string $path = self::ROOT_PARAM;
 
+    protected bool $ignorePreview = false;
+
     public function __construct(
         readonly public string $deletePlaceholder = self::DELETE_FLAG,
         protected string $param = self::ROOT_PARAM,
@@ -67,6 +69,18 @@ class ContextDTO implements IArrayConstructible, IArrayConvertible
         $ctx->path = $this->path . self::PATH_SEPARATOR . $nextParam;
         $ctx->param = $nextParam;
         return $ctx;
+    }
+
+    public function withIgnorePreview(bool $ignorePreview = true): static
+    {
+        $ctx = clone $this;
+        $this->ignorePreview = $ignorePreview;
+        return $this;
+    }
+
+    public function ignorePreview(): bool
+    {
+        return $this->ignorePreview;
     }
 
     public function getPath(): string

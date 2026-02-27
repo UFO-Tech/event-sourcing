@@ -27,6 +27,10 @@ class CollectionResolver extends AbstractResolver
         $oldValue ??= [];
         $context ??= ContextDTO::create();
 
+        if ($context->ignorePreview()) {
+            $oldValue = [];
+        }
+
         foreach ($oldValue as $originalKey => $originalValue) {
             if ($originalValue === $context->deletePlaceholder) $originalValue = null;
 
@@ -43,7 +47,7 @@ class CollectionResolver extends AbstractResolver
         foreach ($newValue as $originalKey => $value) {
             if (array_key_exists($originalKey, $oldValue)) continue;
             try {
-                $diff[$originalKey] = $this->resolveItem(null, $value, $originalKey, $context);
+                $diff[$originalKey] = $this->resolveItem(null, $value, $originalKey, $context, ignorePreview: true);
             } catch (NoDiffDetectedException) {}
         }
 
@@ -56,10 +60,11 @@ class CollectionResolver extends AbstractResolver
         mixed $oldValue,
         mixed $newValue,
         string|int $key,
-        ContextDTO $context
+        ContextDTO $context,
+        bool $ignorePreview = false
     ): mixed
     {
-        $nextContext = $context->forPath((string) $key);
+        $nextContext = $context->forPath((string) $key)->withIgnorePreview($ignorePreview);
         return $this->resolver->resolve($oldValue, $newValue, $nextContext);
     }
 

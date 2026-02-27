@@ -29,6 +29,10 @@ class ArrayResolver extends AbstractResolver
         $oldValue ??= [];
         $newValue ??= [];
 
+        if ($context->ignorePreview()) {
+            $oldValue = [];
+        }
+
         if (count($oldValue) !== count($newValue)) {
             return array_values($newValue);
         }

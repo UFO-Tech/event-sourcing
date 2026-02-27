@@ -59,6 +59,10 @@ class ObjectResolver extends AbstractResolver
         $diff = [];
         $ref = new \ReflectionObject($newValue);
 
+        if ($context->ignorePreview()) {
+            $oldValue = null;
+        }
+
         foreach ($ref->getProperties() as $property) {
             if ($this->shouldIgnore($property)) continue;
             if (!$property->isInitialized($newValue)) throw new InvalidObjectException();
@@ -69,14 +73,14 @@ class ObjectResolver extends AbstractResolver
             $hasPropertyInOld = $oldValue && (new \ReflectionClass($oldValue))->hasProperty($property->getName());
 
             if (!$hasPropertyInOld) {
-                $this->resolveValue($newVal, $nextContext, $diff);
+                $this->resolveValue($newVal, $nextContext, $diff, oldVal: null, ignorePreview: true);
                 continue;
             }
 
             $oldProp = (new \ReflectionClass($oldValue))->getProperty($property->getName());
 
             if (!$oldProp->isInitialized($oldValue)) {
-                $this->resolveValue($newVal, $nextContext, $diff);
+                $this->resolveValue($newVal, $nextContext, $diff, oldVal: null, ignorePreview: true);
                 continue;
             }
 
@@ -92,8 +96,15 @@ class ObjectResolver extends AbstractResolver
         return $diff;
     }
 
-    protected function resolveValue(mixed $newVal, ContextDTO $nextContext, array &$diff, mixed $oldVal = null): void
+    protected function resolveValue(
+        mixed $newVal,
+        ContextDTO $nextContext,
+        array &$diff,
+        mixed $oldVal = null,
+        bool $ignorePreview = false
+    ): void
     {
+        $nextContext = $nextContext->withIgnorePreview($ignorePreview);
         try {
             $diff[$nextContext->getParam()] = $this->resolver->resolve($oldVal, $newVal, $nextContext);
         } catch (NoDiffDetectedException) {}
